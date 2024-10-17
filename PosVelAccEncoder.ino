@@ -24,7 +24,9 @@
 // The common contact should be attached to ground.
 
 #include <Arduino.h>
+#include "Ticker.h"
 #include "RotaryEncoder.h"
+
 
 #define SW 8
 #define DT 9
@@ -35,27 +37,8 @@
 
 // Setup a RotaryEncoder with 2 steps per latch for the 2 signal input pins:
 RotaryEncoder encoder(DT, CLK, RotaryEncoder::LatchMode::TWO03);
-
-// Define some constants.
-
-// the maximum acceleration is 10 times.
-constexpr float m = 10;
-
-// at 200ms or slower, there should be no acceleration. (factor 1)
-constexpr float longCutoff = 50;
-
-// at 5 ms, we want to have maximum acceleration (factor m)
-constexpr float shortCutoff = 5;
-
-// To derive the calc. constants, compute as follows:
-// On an x(ms) - y(factor) plane resolve a linear formular factor(ms) = a * ms + b;
-// where  f(4)=10 and f(200)=1
-
-constexpr float a = (m - 1) / (shortCutoff - longCutoff);
-constexpr float b = 1 - longCutoff * a;
-
-// a global variables to hold the last position
-static int lastPos = 0;
+Ticker encoderTicker([]() { encoder.tick(); }, 10, 0, MILLIS);
+  
 
 void setup()
 {
@@ -64,50 +47,24 @@ void setup()
     ;
 
   Serial.println("AcceleratedRotator example for the RotaryEncoder library.");
-  Serial.print("a=");
-  Serial.println(a);
-  Serial.print("b=");
-  Serial.println(b);
+  encoderTicker.start();
 } // setup()
 
 
 // Read the current position of the encoder and print out when changed.
-void loop()
-{
-  encoder.tick();
-
-  int newPos = encoder.getPosition();
-  if (lastPos != newPos) {
-
-    // accelerate when there was a previous rotation in the same direction.
-
-    unsigned long ms = encoder.getMillisBetweenRotations();
-
-    if (ms < longCutoff) {
-      // do some acceleration using factors a and b
-
-      // limit to maximum acceleration
-      if (ms < shortCutoff) {
-        ms = shortCutoff;
-      }
-
-      float ticksActual_float = a * ms + b;
-      Serial.print("  f= ");
-      Serial.println(ticksActual_float);
-
-      long deltaTicks = (long)ticksActual_float * (newPos - lastPos);
-      Serial.print("  d= ");
-      Serial.println(deltaTicks);
-
-      newPos = newPos + deltaTicks;
-      encoder.setPosition(newPos);
-    }
-
-    Serial.print(newPos);
-    Serial.print("  ms: ");
-    Serial.println(ms);
-    lastPos = newPos;
-  } // if
-} // loop ()
-
-// The End
+void loop() {
+  // Update the Ticker in each iteration
+  encoderTicker.update();
+  
+  // Print encoder position every 1000 ms (adjust as needed)
+  static unsigned long lastPrint = 0;
+  if (millis() - lastPrint >= 1000) {
+    Serial.print("Position: ");
+    Serial.println(encoder.getPosition());
+    Serial.print("Velocity: ");
+    Serial.println(encoder.getVelocity());
+    Serial.print("Acceleration: ");
+    Serial.println(encoder.getAcceleration());
+    lastPrint = millis();
+  }
+}

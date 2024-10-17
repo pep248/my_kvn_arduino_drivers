@@ -20,6 +20,7 @@
 
 #include "Arduino.h"
 
+
 class RotaryEncoder
 {
 public:
@@ -70,12 +71,19 @@ private:
 
   volatile int8_t _oldState;
 
-  volatile long _position;        // Internal position (4 times _positionExt)
-  volatile long _positionExt;     // External position
-  volatile long _positionExtPrev; // External position (used only for direction checking)
+  volatile long _positionInt;         // Internal position (4 times _position)
+  volatile long _position;            // External position
+  volatile long _lastPosition;     // External position (used only for direction checking)
 
-  unsigned long _positionExtTime;     // The time the last position change was detected.
-  unsigned long _positionExtTimePrev; // The time the previous position change was detected.
+  unsigned long _positionTime;     // The time the last position change was detected.
+  unsigned long _lastPositionTime; // The time the previous position change was detected.
+
+  volatile long _lastVelocity;
+  unsigned long _lastVelocityTime;
+  volatile long _lastAcceleration;
+  unsigned long _lastAccelerationTime;
+
+
 };
 
 #endif
