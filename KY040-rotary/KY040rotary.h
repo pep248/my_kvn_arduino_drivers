@@ -33,6 +33,7 @@ typedef void(*isr)();
 class KY040
 {
   public:
+    // Original variables
     uint8_t pinClk;
     uint8_t pinDt;
     int pinSw;
@@ -49,6 +50,13 @@ class KY040
     volatile int signalAB;
     bool dtDebounce;
 
+    // New variables
+    long Time;
+    int Pos;
+    double Vel;
+    double Acc;
+
+
   public:
     KY040(uint8_t pinClk, uint8_t pinDt, uint8_t pinSw);
     bool Begin(isr isr1 = NULL, isr isr2 = NULL);
@@ -60,10 +68,17 @@ class KY040
     void OnButtonLeft( callback );
     void OnButtonRight( callback );
 
+    // New functions
+    int GetPosition();
+    double GetVelocity();
+    double GetAcceleration();
+
   private:
     static void OnButtonClicked_cb(void);
     static void OnButtonLeft_cb(void);
     static void OnButtonRight_cb(void);
+    
+    static KY040* currentInstance; // To allow static functions to use instance variables
 
   protected:
     callback _OnCbClick;

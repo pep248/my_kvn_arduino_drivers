@@ -26,19 +26,22 @@
 
 #include "KY040rotary.h"
 
+#define SW 8
+#define DT 9
+#define CLK 10
+
 // init the button
-KY040 Rotary(5, 6, 7);
+KY040 Rotary(CLK, DT, SW);
 
-
-void OnButtonClicked(void) {
-  Serial.println("Button 1: clicked");
-}
-void OnButtonLeft(void) {
-  Serial.println("Button 1: rotating left");
-}
-void OnButtonRight(void) {
-  Serial.println("Button 1: rotating right");
-}
+// void OnButtonClicked(void) {
+//   Serial.println("Button 1: clicked");
+// }
+// void OnButtonLeft(void) {
+//   Serial.println("Button 1: rotating left");
+// }
+// void OnButtonRight(void) {
+//   Serial.println("Button 1: rotating right");
+// }
 
 /* Handlers for interrupts mode
   void RSW1_SwitchInterruptHandler(void) {
@@ -73,5 +76,17 @@ void setup() {
 
 void loop() {
   Rotary.Process( millis() );
+
+  static unsigned long lastPrint = 0;
+  if (millis() - lastPrint >= 1000) {
+    Serial.print("Position: ");
+    Serial.println(Rotary.GetPosition());
+    Serial.print("Velocity: ");
+    Serial.println(Rotary.GetVelocity());
+    Serial.print("Acceleration: ");
+    Serial.println(Rotary.GetAcceleration());
+    lastPrint = millis();
+  }
+  
 }
 

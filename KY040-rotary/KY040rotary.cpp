@@ -49,7 +49,12 @@ KY040::KY040(uint8_t pinClk, uint8_t pinDt, uint8_t pinSw)
 
   this->signalAB = 0;
 
-
+  // Init control variables
+  currentInstance = this;
+  this->Time = 0;
+  this->Pos = 0;
+  this->Vel = 0;
+  this->Acc = 0;
 }
 
 bool KY040::Begin(isr isr1, isr isr2)
@@ -150,14 +155,51 @@ void KY040::DecodeSignals(void)
 
 static void KY040::OnButtonClicked_cb(void) {
   // Serial.println("Button 1: clicked");
+    currentInstance->Time = millis();
+    currentInstance->Pos = 0;
+    currentInstance->Vel = 0.0;
+    currentInstance->Acc = 0.0;
 }
 
 static void KY040::OnButtonLeft_cb(void) {
   // Serial.println("Button 1: rotating left");
+  long lastTime = currentInstance->Time;
+  currentInstance->Time = millis();
+
+  int lastPos = currentInstance->Pos;
+  currentInstance->Pos = currentInstance->Pos +1;
+
+  double lastVel = currentInstance->Vel;
+  currentInstance->Vel = (currentInstance->Pos - lastPos) / (currentInstance->Time - lastTime);
+
+  currentInstance->Acc = (currentInstance->Vel - lastVel) / (currentInstance->Time - lastTime); 
 }
 
 static void KY040::OnButtonRight_cb(void) {
   // Serial.println("Button 1: rotating right");
+  long lastTime = currentInstance->Time;
+  currentInstance->Time = millis();
+
+  int lastPos = currentInstance->Pos;
+  currentInstance->Pos = currentInstance->Pos -1;
+
+  double lastVel = currentInstance->Vel;
+  currentInstance->Vel = (currentInstance->Pos - lastPos) / (currentInstance->Time - lastTime);
+
+  currentInstance->Acc = (currentInstance->Vel - lastVel) / (currentInstance->Time - lastTime); 
+}
+
+
+int KY040::GetPosition() {
+  return this->Pos;
+}
+
+double KY040::GetVelocity() {
+  return this->Vel;
+}
+
+double KY040::GetAcceleration() {
+  return this->Acc;
 }
 
 
@@ -175,3 +217,5 @@ void KY040::OnButtonRight( callback cb )
 {
   this->_OnCbRight = cb;
 }
+
+KY040* KY040::currentInstance = nullptr;
