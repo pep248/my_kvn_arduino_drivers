@@ -74,9 +74,9 @@ bool KY040::Begin(isr isr1, isr isr2)
   }
 
   // init callbacks
-  this->OnButtonClicked(this->OnButtonClicked_cb);
-  this->OnButtonLeft(this->OnButtonLeft_cb);
-  this->OnButtonRight(this->OnButtonRight_cb);
+  // this->OnButtonClicked(this->OnButtonClicked_cb);
+  // this->OnButtonLeft(this->OnButtonLeft_cb);
+  // this->OnButtonRight(this->OnButtonRight_cb);
 
 
   delay(300);
@@ -139,17 +139,40 @@ void KY040::DecodeSignals(void)
   int signalA = digitalRead(this->pinClk);
   int signalB = digitalRead(this->pinDt);
 
-  int encoded = (signalB << 1) | signalA;  // converting the 2 pin value to single number
-  int sum  = (this->signalAB << 2) | encoded; // adding it to the previous encoded value
+  int currentState = (signalB << 1) | signalA;
+  int transition = (this->signalAB << 2) | currentState;
 
-  if (sum == 0b0001 || sum == 0b0111 || sum == 0b1110 || sum == 0b1000) {
-    this->dtState = 1;
-  }
-  if (sum == 0b0010 || sum == 0b1011 || sum == 0b1101 || sum == 0b0100) {
-    this->dtState = 2;
+  // Init the position
+  int lastPos = this->Pos;
+
+  switch(transition) {
+    case 0b0001:
+    case 0b0111:
+    case 0b1110:
+    case 0b1000:
+      this->Pos++;
+      this->dtState = 1;  // Clockwise
+      break;
+    case 0b0010:
+    case 0b1011:
+    case 0b1101:
+    case 0b0100:
+      this->Pos--;
+      this->dtState = 2;  // Counter-clockwise
+      break;
   }
 
-  this->signalAB = encoded; // store this value for next time
+  this->signalAB = currentState;
+
+  // Control update
+  long lastTime = this->Time;
+  this->Time = millis()/1000;
+
+  
+  long lastVel = this->Vel;
+  this->Vel = (this->Pos - lastPos) / (this->Time - lastTime);
+
+  this->Acc = (this->Vel - lastVel) / (this->Time - lastTime); 
 }
 
 
@@ -162,12 +185,11 @@ static void KY040::OnButtonClicked_cb(void) {
 }
 
 static void KY040::OnButtonLeft_cb(void) {
-  // Serial.println("Button 1: rotating left");
   long lastTime = currentInstance->Time;
   currentInstance->Time = millis();
 
   int lastPos = currentInstance->Pos;
-  currentInstance->Pos = currentInstance->Pos +1;
+  // No need to modify Pos here, it's already updated in DecodeSignals
 
   double lastVel = currentInstance->Vel;
   currentInstance->Vel = (currentInstance->Pos - lastPos) / (currentInstance->Time - lastTime);
@@ -176,12 +198,11 @@ static void KY040::OnButtonLeft_cb(void) {
 }
 
 static void KY040::OnButtonRight_cb(void) {
-  // Serial.println("Button 1: rotating right");
   long lastTime = currentInstance->Time;
   currentInstance->Time = millis();
 
   int lastPos = currentInstance->Pos;
-  currentInstance->Pos = currentInstance->Pos -1;
+  // No need to modify Pos here, it's already updated in DecodeSignals
 
   double lastVel = currentInstance->Vel;
   currentInstance->Vel = (currentInstance->Pos - lastPos) / (currentInstance->Time - lastTime);

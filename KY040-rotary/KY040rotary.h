@@ -56,7 +56,6 @@ class KY040
     double Vel;
     double Acc;
 
-
   public:
     KY040(uint8_t pinClk, uint8_t pinDt, uint8_t pinSw);
     bool Begin(isr isr1 = NULL, isr isr2 = NULL);
