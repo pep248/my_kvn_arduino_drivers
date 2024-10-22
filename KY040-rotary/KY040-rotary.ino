@@ -75,8 +75,14 @@ void setup() {
 
 
 void loop() {
-  Rotary.Process( millis() );
+  
 
+  static unsigned long lastRotaryPrint = 0;
+  if (millis() - lastRotaryPrint >= 1) {
+    Rotary.Process( millis() );
+    lastRotaryPrint = millis();
+  }
+  
   static unsigned long lastPrint = 0;
   if (millis() - lastPrint >= 1000) {
     Serial.print("Position: ");

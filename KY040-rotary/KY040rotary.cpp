@@ -142,8 +142,9 @@ void KY040::DecodeSignals(void)
   int currentState = (signalB << 1) | signalA;
   int transition = (this->signalAB << 2) | currentState;
 
-  // Init the position
-  int lastPos = this->Pos;
+  double lastPos = this->Pos;
+  double lastTime = this->Time;
+  this->Time = millis() / 1000.0;  // Convert to seconds
 
   switch(transition) {
     case 0b0001:
@@ -164,17 +165,14 @@ void KY040::DecodeSignals(void)
 
   this->signalAB = currentState;
 
-  // Control update
-  long lastTime = this->Time;
-  this->Time = millis()/1000;
-
-  
-  long lastVel = this->Vel;
-  this->Vel = (this->Pos - lastPos) / (this->Time - lastTime);
-
-  this->Acc = (this->Vel - lastVel) / (this->Time - lastTime); 
+  // Update velocity and acceleration
+  double deltaTime = this->Time - lastTime;
+  if (deltaTime > 0) {
+    double lastVel = this->Vel;
+    this->Vel = (this->Pos - lastPos) / deltaTime;
+    this->Acc = (this->Vel - lastVel) / deltaTime;
+  }
 }
-
 
 static void KY040::OnButtonClicked_cb(void) {
   // Serial.println("Button 1: clicked");
@@ -185,33 +183,13 @@ static void KY040::OnButtonClicked_cb(void) {
 }
 
 static void KY040::OnButtonLeft_cb(void) {
-  long lastTime = currentInstance->Time;
-  currentInstance->Time = millis();
-
-  int lastPos = currentInstance->Pos;
-  // No need to modify Pos here, it's already updated in DecodeSignals
-
-  double lastVel = currentInstance->Vel;
-  currentInstance->Vel = (currentInstance->Pos - lastPos) / (currentInstance->Time - lastTime);
-
-  currentInstance->Acc = (currentInstance->Vel - lastVel) / (currentInstance->Time - lastTime); 
 }
 
-static void KY040::OnButtonRight_cb(void) {
-  long lastTime = currentInstance->Time;
-  currentInstance->Time = millis();
-
-  int lastPos = currentInstance->Pos;
-  // No need to modify Pos here, it's already updated in DecodeSignals
-
-  double lastVel = currentInstance->Vel;
-  currentInstance->Vel = (currentInstance->Pos - lastPos) / (currentInstance->Time - lastTime);
-
-  currentInstance->Acc = (currentInstance->Vel - lastVel) / (currentInstance->Time - lastTime); 
+static void KY040::OnButtonRight_cb(void) { 
 }
 
 
-int KY040::GetPosition() {
+double KY040::GetPosition() {
   return this->Pos;
 }
 

@@ -51,8 +51,8 @@ class KY040
     bool dtDebounce;
 
     // New variables
-    long Time;
-    int Pos;
+    double Time;
+    double Pos;
     double Vel;
     double Acc;
 
@@ -68,7 +68,7 @@ class KY040
     void OnButtonRight( callback );
 
     // New functions
-    int GetPosition();
+    double GetPosition();
     double GetVelocity();
     double GetAcceleration();
 
