@@ -53,8 +53,13 @@ class KY040
     // New variables
     double Time;
     double Pos;
+    double PosRad;
+    double lastPos;
     double Vel;
     double Acc;
+    double lastTime;
+
+    const double stepToRad = 2 * PI / 80;
 
   public:
     KY040(uint8_t pinClk, uint8_t pinDt, uint8_t pinSw);

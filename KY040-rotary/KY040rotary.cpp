@@ -53,8 +53,12 @@ KY040::KY040(uint8_t pinClk, uint8_t pinDt, uint8_t pinSw)
   currentInstance = this;
   this->Time = 0;
   this->Pos = 0;
+  this->PosRad = 0;
   this->Vel = 0;
   this->Acc = 0;
+  this->lastTime = 0;
+  this->lastPos = 0;
+
 }
 
 bool KY040::Begin(isr isr1, isr isr2)
@@ -74,10 +78,9 @@ bool KY040::Begin(isr isr1, isr isr2)
   }
 
   // init callbacks
-  // this->OnButtonClicked(this->OnButtonClicked_cb);
+  this->OnButtonClicked(this->OnButtonClicked_cb);
   // this->OnButtonLeft(this->OnButtonLeft_cb);
   // this->OnButtonRight(this->OnButtonRight_cb);
-
 
   delay(300);
   return true;
@@ -142,8 +145,6 @@ void KY040::DecodeSignals(void)
   int currentState = (signalB << 1) | signalA;
   int transition = (this->signalAB << 2) | currentState;
 
-  double lastPos = this->Pos;
-  double lastTime = this->Time;
   this->Time = millis() / 1000.0;  // Convert to seconds
 
   switch(transition) {
@@ -166,18 +167,21 @@ void KY040::DecodeSignals(void)
   this->signalAB = currentState;
 
   // Update velocity and acceleration
-  double deltaTime = this->Time - lastTime;
-  if (deltaTime > 0) {
+  if (this->Time - this->lastTime > 0.1) {
+    this->PosRad = this->Pos * stepToRad;
+    double deltaTime = this->Time - this->lastTime;
     double lastVel = this->Vel;
-    this->Vel = (this->Pos - lastPos) / deltaTime;
+    this->Vel = (this->PosRad - this->lastPos) / deltaTime;
     this->Acc = (this->Vel - lastVel) / deltaTime;
+    this->lastPos = this->PosRad;
+    this->lastTime = this->Time;
   }
 }
 
 static void KY040::OnButtonClicked_cb(void) {
-  // Serial.println("Button 1: clicked");
-    currentInstance->Time = millis();
     currentInstance->Pos = 0;
+    currentInstance->lastPos = 0;
+    currentInstance->PosRad = 0;
     currentInstance->Vel = 0.0;
     currentInstance->Acc = 0.0;
 }
@@ -190,7 +194,7 @@ static void KY040::OnButtonRight_cb(void) {
 
 
 double KY040::GetPosition() {
-  return this->Pos;
+  return this->PosRad;
 }
 
 double KY040::GetVelocity() {
