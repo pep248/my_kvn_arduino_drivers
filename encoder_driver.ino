@@ -68,6 +68,22 @@
       return;
     }
   }
+#elif defined KY040_ENC
+  #include "KY040rotary.h"
+  KY040 LeftRotaryEncoder(LEFT_CLK, LEFT_DT, LEFT_SW);
+  KY040 LeftRotaryEncoder(RIGHT_CLK, RIGHT_DT, RIGHT_SW);
+
+  long readEncoder(int i) {
+    if (i == LEFT) return LeftRotaryEncoder.GetStepPosition();
+    else return RightRotaryEncoder.GetStepPosition();
+  }
+
+  /* Wrap the encoder reset function */
+  void resetEncoder(int i) {
+    if (i == LEFT) LeftRotaryEncoder.OnButtonClicked_cb();
+    else RightRotaryEncoder.OnButtonClicked_cb();
+  }
+  
 #else
   #error A encoder driver must be selected!
 #endif

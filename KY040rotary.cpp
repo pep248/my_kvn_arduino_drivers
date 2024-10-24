@@ -168,12 +168,11 @@ void KY040::DecodeSignals(void)
 
   // Update velocity and acceleration
   if (this->Time - this->lastTime > 0.1) {
-    this->PosRad = this->Pos * stepToRad;
     double deltaTime = this->Time - this->lastTime;
     double lastVel = this->Vel;
-    this->Vel = (this->PosRad - this->lastPos) / deltaTime;
+    this->Vel = (this->Pos - this->lastPos) / deltaTime;
     this->Acc = (this->Vel - lastVel) / deltaTime;
-    this->lastPos = this->PosRad;
+    this->lastPos = this->Pos;
     this->lastTime = this->Time;
   }
 }
@@ -193,16 +192,29 @@ static void KY040::OnButtonRight_cb(void) {
 }
 
 
-double KY040::GetPosition() {
-  return this->PosRad;
+double KY040::GetStepPosition() {
+  return this->Pos;
 }
 
-double KY040::GetVelocity() {
+double KY040::GetStepVelocity() {
   return this->Vel;
 }
 
-double KY040::GetAcceleration() {
+double KY040::GetStepAcceleration() {
   return this->Acc;
+}
+
+
+double KY040::GetRadPosition() {
+  return this->Pos*stepToRad;
+}
+
+double KY040::GetRadVelocity() {
+  return this->Vel*stepToRad;
+}
+
+double KY040::GetRadAcceleration() {
+  return this->Acc*stepToRad;
 }
 
 

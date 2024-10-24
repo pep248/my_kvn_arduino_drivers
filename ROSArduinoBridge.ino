@@ -62,6 +62,9 @@
    /* Encoders directly attached to Arduino board */
    //#define ARDUINO_ENC_COUNTER
 
+   /* KY040 Encoder*/
+   #define KY040_ENC
+
    /* L298 Motor driver*/
    //#define L298_MOTOR_DRIVER
 
@@ -275,6 +278,17 @@ void setup() {
     
     // enable PCINT1 and PCINT2 interrupt in the general interrupt mask
     PCICR |= (1 << PCIE1) | (1 << PCIE2);
+  #elif defined KY040_ENC
+    if(!LeftRotaryEncoder.Begin()) {
+      Serial.println("unable to init LeftRotaryEncoder");
+      while (1);
+    }
+    Serial.println("KY-040 LeftRotaryEncoder encoder OK");
+    if(!RightRotaryEncoder.Begin()) {
+      Serial.println("unable to init RightRotaryEncoder");
+      while (1);
+    }
+    Serial.println("KY-040 RightRotaryEncoder encoder OK");
   #endif
   initMotorController();
   resetPID();
@@ -339,6 +353,10 @@ void loop() {
   
 // If we are using base control, run a PID calculation at the appropriate intervals
 #ifdef USE_BASE
+  #ifdef KY040_ENC
+    LeftRotaryEncoder.Process(millis());
+    RightRotaryEncoder.Process(millis());
+  #endif
   if (millis() > nextPID) {
     updatePID();
     nextPID += PID_INTERVAL;

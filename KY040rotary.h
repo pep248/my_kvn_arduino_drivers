@@ -53,7 +53,6 @@ class KY040
     // New variables
     double Time;
     double Pos;
-    double PosRad;
     double lastPos;
     double Vel;
     double Acc;
@@ -73,9 +72,13 @@ class KY040
     void OnButtonRight( callback );
 
     // New functions
-    double GetPosition();
-    double GetVelocity();
-    double GetAcceleration();
+    double GetStepPosition();
+    double GetStepVelocity();
+    double GetStepAcceleration();
+
+    double GetRadPosition();
+    double GetRadVelocity();
+    double GetRadAcceleration();
 
   private:
     static void OnButtonClicked_cb(void);

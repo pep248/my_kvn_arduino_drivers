@@ -12,6 +12,13 @@
   //below can be changed, but should be PORTC pins
   #define RIGHT_ENC_PIN_A PC4  //pin A4
   #define RIGHT_ENC_PIN_B PC5   //pin A5
+#elif defined KY040_ENC
+  #define LEFT_SW 8
+  #define LEFT_DT 9
+  #define LEFT_CLK 10
+  #define RIGHT_SW 11
+  #define RIGHT_DT 12
+  #define RIGHT_CLK 13
 #endif
    
 long readEncoder(int i);
