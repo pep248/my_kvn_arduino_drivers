@@ -91,7 +91,7 @@
 /* Include definition of serial commands */
 #include "commands.h"
 
-/* Sensor functions */
+/* Include the proximity sensor */
 #include "sensors.h"
 
 /* Include servo support if required */
@@ -222,8 +222,8 @@ int runCommand() {
       moving = 0;
     }
     else moving = 1;
-    leftPID.TargetTicksPerFrame = arg1;
-    rightPID.TargetTicksPerFrame = arg2;
+    leftPID.TargetStepsPerTimeFrame = arg1;
+    rightPID.TargetStepsPerTimeFrame = arg2;
     Serial.println("OK"); 
     break;
   case MOTOR_RAW_PWM:
